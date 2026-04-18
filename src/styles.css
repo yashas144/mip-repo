@@ -402,3 +402,31 @@ button {
     align-items: flex-start;
   }
 }
+
+.mood-detector-wrapper {
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.mood-hint {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.mood-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.mood-divider::before,
+.mood-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}

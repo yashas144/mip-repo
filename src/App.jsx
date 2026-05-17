@@ -1,13 +1,25 @@
-/* Yashas */
-
 import { useState } from "react";
 import Header from "./components/Header";
+import LoginPage from "./components/LoginPage";
 import SearchPage from "./components/SearchPage";
 import InsightsPage from "./components/InsightsPage";
 import RecommendationsPage from "./components/RecommendationsPage";
 import { sendChatMessage } from "./services/api";
 
+const AUTH_STORAGE_KEY = "mip-auth-session";
+const LOGIN_USERNAME = process.env.REACT_APP_LOGIN_USERNAME || "yashas123";
+const LOGIN_PASSWORD = process.env.REACT_APP_LOGIN_PASSWORD || "MusicAI2026!";
+
+function getStoredUser() {
+  try {
+    return window.localStorage.getItem(AUTH_STORAGE_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
 export default function App() {
+  const [currentUser, setCurrentUser] = useState(() => getStoredUser());
   const [activePage, setActivePage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [responseText, setResponseText] = useState("");
@@ -15,6 +27,42 @@ export default function App() {
   const [evidence, setEvidence] = useState([]);
   const [grounded, setGrounded] = useState(true);
   const [error, setError] = useState("");
+  const [authError, setAuthError] = useState("");
+
+  const handleLogin = (username, password) => {
+    const normalizedUsername = username.trim();
+
+    if (
+      normalizedUsername === LOGIN_USERNAME &&
+      password === LOGIN_PASSWORD
+    ) {
+      setCurrentUser(normalizedUsername);
+      setAuthError("");
+
+      try {
+        window.localStorage.setItem(AUTH_STORAGE_KEY, normalizedUsername);
+      } catch {
+        // Ignore storage failures and continue with in-memory auth.
+      }
+
+      return true;
+    }
+
+    setAuthError("Invalid username or password.");
+    return false;
+  };
+
+  const handleLogout = () => {
+    setCurrentUser("");
+    setAuthError("");
+    setActivePage(1);
+
+    try {
+      window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch {
+      // Ignore storage failures and continue with in-memory auth.
+    }
+  };
 
   const handleSend = async (message) => {
     try {
@@ -41,9 +89,18 @@ export default function App() {
     }
   };
 
+  if (!currentUser) {
+    return (
+      <div className="app-shell">
+        <Header />
+        <LoginPage onLogin={handleLogin} error={authError} />
+      </div>
+    );
+  }
+
   return (
     <div className="app-shell">
-      <Header />
+      <Header currentUser={currentUser} onLogout={handleLogout} />
 
       <nav className="page-nav">
         <button
